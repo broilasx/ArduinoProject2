@@ -1,0 +1,108 @@
+#include <Servo.h>
+#include <Keypad.h>
+#include <LiquidCrystal.h>
+const int rs = 12, e = 13, db4 = A0, db5 = A1, db6 = A2, db7 = A3;
+LiquidCrystal lcd(rs, e, db4, db5, db6, db7);
+Servo ServoMotor;
+char* password = "12356";
+int position = 0;
+int a = 0;
+const byte ROWS = 5;
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+{'1','2','3','A'},
+{'4','5','6','B'},
+{'7','8','9','C'},
+{'*','0','#','D'}
+};
+byte rowPins[ROWS] = { 8, 7, 6, 9, 1 };
+byte colPins[COLS] = { 5, 4, 3, 2 };
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+
+int fechar = A5;
+int abrir = A4;
+
+void setup()
+{
+     lcd.begin(16,2);                                            
+     ServoMotor.attach(11);
+     ServoMotor.write(0);
+     lcd.clear();
+     lcd.setCursor(0, 0);
+     lcd.print("PORTA FECHADA");
+     lcd.setCursor(0, 1);
+     lcd.print("INSIRA O PIN.");
+  		
+  	 pinMode(abrir, INPUT);
+  	 pinMode(fechar, INPUT);
+}
+
+void loop()
+{
+ 
+char key = keypad.getKey();
+
+ 	if (key == '*' )
+ 		{
+ 			position = 0;
+ 			ServoMotor.write(0);
+        	lcd.clear();
+        	lcd.setCursor(0, 0);
+       	 	lcd.print("PORTA FECHADA");
+       	 	lcd.setCursor(0, 1);
+        	lcd.print("INSIRA O PIN.");
+            
+ 		}
+                                                                      
+	if (key == '0' || key == '1' ||key == '2' ||key == '3' ||key == '4'||key == '5' ||key == '6' ||key == '7' ||key == '8' ||key == '9')
+		{ if (position == 0)
+        	{
+          		lcd.clear();
+             }
+			                                
+			lcd.setCursor(position,0);
+			lcd.print('*');
+													  
+			if (key == password[position])
+				{ 
+  					a++;
+				}
+         position ++;										
+		}
+                                                                                          
+	if (key == '#')
+		{                                                                      
+  			if (position == a & a!=0 & position !=0)
+				{                                
+    				ServoMotor.write(90);
+                    lcd.clear();
+    				lcd.setCursor(0, 0);
+    				lcd.print("PIN CORRETO.");
+    				lcd.setCursor(0,1);
+    				lcd.print("PORTA ABERTA.");  
+				}
+                                                                                 
+			if (position != a || position ==0 || a == 0)
+				{                                
+                   ServoMotor.write(0);
+                   lcd.clear();
+                   lcd.setCursor(0, 0);
+                   lcd.print("PIN INCORRETO.");
+                   lcd.setCursor(0, 1);
+                   lcd.print("PORTA FECHADA.");
+				}
+			a=0;
+			position= 0;
+		}
+  
+    int valorabrir = digitalRead(abrir);
+  	if (valorabrir == HIGH)
+    {
+      ServoMotor.write(90);
+    }
+  	int valorfechar = digitalRead(fechar);
+    if (valorfechar == HIGH)
+    {
+      ServoMotor.write(0);
+    }
+}
